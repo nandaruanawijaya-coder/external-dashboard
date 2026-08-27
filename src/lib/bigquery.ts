@@ -7,28 +7,17 @@ export function getBigQueryClient(): BigQuery {
     const credentialsJson = process.env.GOOGLE_APPLICATION_CREDENTIALS;
     const projectId = process.env.NEXT_PUBLIC_GOOGLE_CLOUD_PROJECT_ID;
 
-    console.log('[BigQuery] Initializing client...');
-    console.log('[BigQuery] Project ID:', projectId);
-    console.log('[BigQuery] Credentials env var present:', !!credentialsJson);
-    console.log('[BigQuery] Credentials length:', credentialsJson?.length);
-
     const clientOptions: any = {
       projectId,
     };
 
     if (credentialsJson && !credentialsJson.startsWith('/')) {
       try {
-        console.log('[BigQuery] Parsing credentials JSON...');
         const credentials = JSON.parse(credentialsJson);
         clientOptions.credentials = credentials;
-        console.log('[BigQuery] Credentials parsed successfully');
-        console.log('[BigQuery] Credentials type:', credentials.type);
-        console.log('[BigQuery] Credentials project_id:', credentials.project_id);
       } catch (error) {
-        console.error('[BigQuery] Failed to parse credentials JSON:', error);
+        console.error('Failed to parse BigQuery credentials:', error);
       }
-    } else if (!credentialsJson) {
-      console.warn('[BigQuery] No GOOGLE_APPLICATION_CREDENTIALS env var found!');
     }
 
     bigQueryClient = new BigQuery(clientOptions);
