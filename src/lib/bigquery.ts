@@ -1,30 +1,25 @@
 import { BigQuery } from '@google-cloud/bigquery';
-import * as fs from 'fs';
-import * as path from 'path';
 
 let bigQueryClient: BigQuery | null = null;
 
 export function getBigQueryClient(): BigQuery {
   if (!bigQueryClient) {
     const credentialsJson = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+    const clientOptions: any = {
+      projectId: process.env.NEXT_PUBLIC_GOOGLE_CLOUD_PROJECT_ID,
+    };
 
+    // If credentials are provided as JSON string, parse and use them directly
     if (credentialsJson && !credentialsJson.startsWith('/')) {
-      // If GOOGLE_APPLICATION_CREDENTIALS contains JSON (not a file path),
-      // write it to a temp file so the BigQuery client can read it
-      const tmpDir = '/tmp';
-      const credentialsPath = path.join(tmpDir, 'gcloud-credentials.json');
-
       try {
-        fs.writeFileSync(credentialsPath, credentialsJson);
-        process.env.GOOGLE_APPLICATION_CREDENTIALS = credentialsPath;
+        const credentials = JSON.parse(credentialsJson);
+        clientOptions.credentials = credentials;
       } catch (error) {
-        console.error('Failed to write credentials file:', error);
+        console.error('Failed to parse credentials JSON:', error);
       }
     }
 
-    bigQueryClient = new BigQuery({
-      projectId: process.env.NEXT_PUBLIC_GOOGLE_CLOUD_PROJECT_ID,
-    });
+    bigQueryClient = new BigQuery(clientOptions);
   }
   return bigQueryClient;
 }
